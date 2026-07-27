@@ -6,3 +6,4 @@ test-results/
 pnpm-lock.yaml
 data/raw/
 src/data/graph.json
+.wrangler/
