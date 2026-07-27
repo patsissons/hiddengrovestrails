@@ -43,3 +43,13 @@ pnpm dev
 | `pnpm format-and-validate` | Prettier write, then full `validate`                                    |
 | `pnpm data:fetch`          | Refresh the raw OpenStreetMap snapshot (`data/raw/overpass.json`)       |
 | `pnpm data:build`          | Rebuild the trail graph (`src/data/graph.json`) from raw + curated data |
+
+## Deployment
+
+Pushes to `main` run `pnpm validate` (format, types, lint, unit, e2e) and then deploy `dist/` to
+Cloudflare Pages via GitHub Actions. One-time setup:
+
+1. Create a Cloudflare Pages project named `hiddengrovestrails` (Workers & Pages → Create →
+   Pages → Direct upload).
+2. Add two GitHub Actions secrets: `CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_API_TOKEN` (a token
+   with the "Cloudflare Pages — Edit" permission).
