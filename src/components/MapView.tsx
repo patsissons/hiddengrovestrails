@@ -13,6 +13,7 @@ import {
   addAppLayers,
   applyLayerVisibility,
   applyRouteHighlight,
+  loadPoiIcons,
   type LayerVisibility,
 } from '@/lib/map/layers'
 
@@ -80,8 +81,11 @@ export default function MapView({
       console.error('[map]', e.error ?? e)
     })
     map.on('load', () => {
-      addAppLayers(map, graph)
-      setReady(true)
+      void loadPoiIcons(map).then(() => {
+        if (mapRef.current !== map) return
+        addAppLayers(map, graph)
+        setReady(true)
+      })
     })
 
     const handleJunctionClick = (e: MapLayerMouseEvent) => {

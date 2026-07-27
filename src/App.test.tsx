@@ -41,7 +41,7 @@ describe('App', () => {
 
   it('renders the layer toggles with all groups enabled', () => {
     render(<App />)
-    for (const name of ['Trails', 'Junctions', 'Route']) {
+    for (const name of ['Trails', 'Junctions', 'Route', 'POIs']) {
       expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'true')
     }
   })

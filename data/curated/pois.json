@@ -1,5 +1,11 @@
 [
-  { "id": "kiosk", "kind": "kiosk", "name": "Kiosk", "lng": -123.7553522, "lat": 49.5263265 },
+  {
+    "id": "kiosk",
+    "kind": "kiosk",
+    "name": "Kiosk",
+    "lng": -123.7553522,
+    "lat": 49.5263265
+  },
   {
     "id": "parking",
     "kind": "parking",
@@ -11,32 +17,64 @@
     "id": "ancient-grove",
     "kind": "grove",
     "name": "Ancient Grove",
-    "lng": -123.7535297,
-    "lat": 49.5281803
+    "lng": -123.7532,
+    "lat": 49.52795
   },
   {
     "id": "lonely-giant",
     "kind": "grove",
     "name": "Lonely Giant",
-    "lng": -123.7526354,
-    "lat": 49.5274991
+    "lng": -123.75225,
+    "lat": 49.52745
   },
   {
     "id": "leaning-giant",
     "kind": "grove",
     "name": "Leaning Giant",
-    "lng": -123.7575371,
-    "lat": 49.5319682
+    "lng": -123.75725,
+    "lat": 49.53185
   },
-  { "id": "twister", "kind": "grove", "name": "Twister", "lng": -123.7555359, "lat": 49.5320398 },
-  { "id": "sentinel", "kind": "grove", "name": "Sentinel", "lng": -123.7520534, "lat": 49.5256741 },
-  { "id": "survivor", "kind": "grove", "name": "Survivor", "lng": -123.7607904, "lat": 49.5231831 },
+  {
+    "id": "twister",
+    "kind": "grove",
+    "name": "Twister",
+    "lng": -123.75555,
+    "lat": 49.53185
+  },
+  {
+    "id": "sentinel",
+    "kind": "grove",
+    "name": "Sentinel",
+    "lng": -123.75235,
+    "lat": 49.52555
+  },
+  {
+    "id": "survivor",
+    "kind": "grove",
+    "name": "Survivor",
+    "lng": -123.76085,
+    "lat": 49.52295
+  },
   {
     "id": "davis-brook-grove",
     "kind": "grove",
     "name": "Davis Brook Grove",
     "lng": -123.7603476,
     "lat": 49.5308024
+  },
+  {
+    "id": "valley-grove",
+    "kind": "grove",
+    "name": "Valley Grove",
+    "lng": -123.7573,
+    "lat": 49.5228
+  },
+  {
+    "id": "maple-grove",
+    "kind": "grove",
+    "name": "Maple Grove",
+    "lng": -123.7517,
+    "lat": 49.531
   },
   {
     "id": "pine-bluff",
@@ -48,7 +86,6 @@
   {
     "id": "east-viewpoint",
     "kind": "viewpoint",
-    "name": "Viewpoint",
     "lng": -123.7485046,
     "lat": 49.5284867
   }

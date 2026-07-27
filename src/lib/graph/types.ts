@@ -34,7 +34,8 @@ export type PoiKind = 'grove' | 'viewpoint' | 'parking' | 'kiosk'
 export interface Poi {
   id: string
   kind: PoiKind
-  name: string
+  /** Some paper-map POIs (e.g. the eastern viewpoint) are unnamed. */
+  name?: string
   lng: number
   lat: number
 }

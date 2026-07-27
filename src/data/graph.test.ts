@@ -63,6 +63,20 @@ describe('committed trail graph', () => {
     }
   })
 
+  it('has well-formed POIs including named groves and viewpoints', () => {
+    const kinds = new Set(['grove', 'viewpoint', 'parking', 'kiosk'])
+    for (const poi of graph.pois) {
+      expect(kinds.has(poi.kind), `poi ${poi.id} kind "${poi.kind}"`).toBe(true)
+      expect(Number.isFinite(poi.lng)).toBe(true)
+      expect(Number.isFinite(poi.lat)).toBe(true)
+    }
+    const names = graph.pois.map((p) => p.name)
+    expect(names).toContain('Pine Bluff')
+    expect(names).toContain('Lonely Giant')
+    // the eastern viewpoint is unnamed on the paper map
+    expect(graph.pois.some((p) => p.kind === 'viewpoint' && p.name === undefined)).toBe(true)
+  })
+
   it('orders edge coords from junction a to junction b', () => {
     for (const edge of Object.values(graph.edges)) {
       const a = graph.junctions[String(edge.a)]

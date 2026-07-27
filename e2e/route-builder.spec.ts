@@ -137,13 +137,20 @@ test('shows the user location after geolocating', async ({ page, context }) => {
 test('layer toggles hide and show overlay groups', async ({ page }) => {
   await page.goto('/?r=1.30')
   await waitForMap(page)
+  const layoutVisibility = (layer: string) =>
+    page.evaluate(
+      (l) =>
+        (
+          window as unknown as {
+            __hgMap: { getLayoutProperty(l: string, p: string): string }
+          }
+        ).__hgMap.getLayoutProperty(l, 'visibility'),
+      layer,
+    )
   await page.getByRole('button', { name: 'Route', exact: true }).click()
-  const visibility = await page.evaluate(() =>
-    (
-      window as unknown as {
-        __hgMap: { getLayoutProperty(l: string, p: string): string }
-      }
-    ).__hgMap.getLayoutProperty('hg-route-line', 'visibility'),
-  )
-  expect(visibility).toBe('none')
+  expect(await layoutVisibility('hg-route-line')).toBe('none')
+  await page.getByRole('button', { name: 'POIs', exact: true }).click()
+  expect(await layoutVisibility('hg-poi')).toBe('none')
+  await page.getByRole('button', { name: 'POIs', exact: true }).click()
+  expect(await layoutVisibility('hg-poi')).toBe('visible')
 })

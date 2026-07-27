@@ -10,6 +10,7 @@ const TOGGLES: { key: keyof LayerVisibility; label: string }[] = [
   { key: 'trails', label: 'Trails' },
   { key: 'junctions', label: 'Junctions' },
   { key: 'route', label: 'Route' },
+  { key: 'pois', label: 'POIs' },
 ]
 
 export default function LayerToggles({ visibility, onChange }: LayerTogglesProps) {
