@@ -46,10 +46,10 @@ pnpm dev
 
 ## Deployment
 
-Pushes to `main` run `pnpm validate` (format, types, lint, unit, e2e) and then deploy `dist/` to
-Cloudflare Pages via GitHub Actions. One-time setup:
+The GitHub repo is connected to Cloudflare Pages (Git integration): every push to `main` deploys
+production, and every PR gets a preview URL. Build settings on the Cloudflare side: framework
+preset **None**, build command **`pnpm build`**, output directory **`dist`** (pnpm version comes
+from the `packageManager` field).
 
-1. Create a Cloudflare Pages project named `hiddengrovestrails` (Workers & Pages → Create →
-   Pages → Direct upload).
-2. Add two GitHub Actions secrets: `CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_API_TOKEN` (a token
-   with the "Cloudflare Pages — Edit" permission).
+CI (`pnpm validate` in GitHub Actions) is advisory — Cloudflare deploys regardless of test
+results, so treat a red check on `main` as "the deployed site may be broken".
