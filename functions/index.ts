@@ -33,5 +33,9 @@ export const onRequestGet: PagesFunction = async (context) => {
     .on('meta[property="og:title"]', setContent(meta.title))
     .on('meta[property="og:description"]', setContent(meta.description))
     .on('meta[property="og:url"]', setContent(url.href))
+    .on(
+      'meta[property="og:image"]',
+      setContent(`${url.origin}/api/og?r=${encodeURIComponent(param)}`),
+    )
     .transform(response)
 }

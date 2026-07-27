@@ -137,7 +137,7 @@ test('shows the user location after geolocating', async ({ page, context }) => {
 test('reflects the route in the document title and meta description', async ({ page }) => {
   await page.goto('/?r=1.30.32.33')
   await waitForMap(page)
-  await expect(page).toHaveTitle('Hidden Groves route 1 → 33 · ~3 min')
+  await expect(page).toHaveTitle('Hidden Groves route 1 → 33 · ~3 min · 158 m · 3 legs')
   const description = page.locator('meta[name="description"]')
   await expect(description).toHaveAttribute('content', /~3 min, 3 legs/)
   await expect(description).toHaveAttribute('content', /1 → 30 → 32 → 33/)

@@ -33,8 +33,9 @@ export function buildRouteMeta(graph: TrailGraph, param: string | null): RouteMe
   const startLabel = graph.junctions[String(route.start)]?.label
   const start = startLabel ? `${route.start} (${startLabel})` : String(route.start)
 
+  const legs = `${stats.stepCount} ${stats.stepCount === 1 ? 'leg' : 'legs'}`
   return {
-    title: `Hidden Groves route ${route.start} → ${end} · ~${stats.totalMinutes} min`,
+    title: `Hidden Groves route ${route.start} → ${end} · ~${stats.totalMinutes} min · ${formatDistance(stats.totalDistanceM)} · ${legs}`,
     description:
       `A ${formatDistance(stats.totalDistanceM)} walk (~${stats.totalMinutes} min, ` +
       `${stats.stepCount} ${stats.stepCount === 1 ? 'leg' : 'legs'}) through the Hidden Groves ` +

@@ -7,7 +7,7 @@ describe('buildRouteMeta', () => {
   it('summarizes a valid route with duration, distance, and legs', () => {
     const meta = buildRouteMeta(tinyGraph, '1.2.3b')
     expect(meta).not.toBeNull()
-    expect(meta!.title).toBe('Hidden Groves route 1 → 3 · ~8 min')
+    expect(meta!.title).toBe('Hidden Groves route 1 → 3 · ~8 min · 200 m · 2 legs')
     expect(meta!.description).toContain('200 m walk')
     expect(meta!.description).toContain('~8 min')
     expect(meta!.description).toContain('2 legs')
