@@ -15,7 +15,7 @@ const TOGGLES: { key: keyof LayerVisibility; label: string }[] = [
 export default function LayerToggles({ visibility, onChange }: LayerTogglesProps) {
   return (
     <div
-      className="absolute left-2 top-2 z-10 flex gap-1 rounded-lg bg-white/90 p-1 shadow-md backdrop-blur"
+      className="absolute top-2 left-2 z-10 flex gap-1 rounded-lg bg-white/90 p-1 shadow-md backdrop-blur md:left-[25.5rem]"
       role="group"
       aria-label="Map layers"
     >
