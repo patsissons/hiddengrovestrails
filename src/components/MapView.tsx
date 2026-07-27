@@ -50,6 +50,8 @@ export default function MapView({
       attributionControl: { compact: true },
     })
     mapRef.current = map
+    // Exposed for e2e tests and debugging.
+    ;(window as unknown as { __hgMap?: MaplibreMap }).__hgMap = map
 
     map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
     map.addControl(
@@ -61,6 +63,9 @@ export default function MapView({
       'top-right',
     )
 
+    map.on('error', (e) => {
+      console.error('[map]', e.error ?? e)
+    })
     map.on('load', () => {
       addAppLayers(map, graph)
       setReady(true)
