@@ -7,6 +7,20 @@ number-by-number along connected trails, and share the whole route as a URL.
 Trail geometry comes from OpenStreetMap (mapped by the Sechelt Groves Society); intersection
 numbers and per-segment walking times are hand-curated from the official paper map.
 
+## Using the app
+
+- **Build a route**: tap any numbered intersection on the map to start, then extend the route by
+  tapping a highlighted adjacent intersection (or picking from the "Continue from" list). Only
+  directly-connected intersections can be added, so every route is walkable.
+- **Follow the colors**: each leg names the marker color to follow on the ground (colored posts at
+  every intersection), e.g. "follow Blue (Monty's Way)". Where two trails connect the same pair of
+  intersections, each appears as its own "via" option.
+- **Share**: the whole route lives in the URL (`?r=1.30.32.33`) — copy it with the Share button.
+  A lowercase suffix picks a parallel trail (`70.71b` = take the Rock Loop instead of Main).
+- **Layers**: the Trails, Junctions, and Route overlays can each be toggled on/off; the Route
+  overlay highlights your chosen path over the dimmed network.
+- **Location**: the target button (top right) shows your live GPS position on the trail map.
+
 ## Setup
 
 ```sh

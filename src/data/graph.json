@@ -363,7 +363,6 @@
    "b": 4,
    "color": "Purple",
    "colorHex": "#c437c9",
-   "name": "Monty's Way",
    "minutes": 3,
    "distanceM": 220,
    "coords": [
@@ -12772,7 +12771,7 @@
   }
  ],
  "meta": {
-  "generatedAt": "2026-07-27T04:29:06.276Z",
+  "generatedAt": "2026-07-27T04:36:14.354Z",
   "osmDataDate": "2026-07-27T03:25:51Z"
  }
 }

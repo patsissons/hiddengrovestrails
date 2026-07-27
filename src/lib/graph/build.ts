@@ -293,7 +293,12 @@ export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult
           `edge ${key}: color changes mid-edge (${partColors.join(', ')}) — curate edgeColors["${key}"] or number the transition`,
         )
       }
-      const name = e.parts.find((p) => p.name)?.name
+      // Trail name from the longest part matching the edge color, so a short
+      // tail from an adjoining trail can't donate its name (e.g. 1-4 is the
+      // Purple trail, not "Monty's Way", despite a metre of Blue at one end).
+      const name = e.parts
+        .filter((p) => p.color === color && p.name)
+        .sort((x, y) => y.distanceM - x.distanceM)[0]?.name
       const minutes = curated.edgeTimes[key] ?? null
       if (minutes === null) warnings.push(`edge ${key}: no walking time curated`)
       const { hex, known } = colorHexFor(color)
