@@ -276,10 +276,12 @@ export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult
   for (const id of Object.keys(junctions)) adjacency[id] = []
 
   for (const [base, group] of grouped) {
+    // Shortest first: the unsuffixed key is the most direct option between two junctions.
     group.sort((x, y) => {
+      if (x.distanceM !== y.distanceM) return x.distanceM - y.distanceM
       const cx = dominantColor(x.parts)
       const cy = dominantColor(y.parts)
-      return cx === cy ? x.distanceM - y.distanceM : cx < cy ? -1 : 1
+      return cx < cy ? -1 : cx > cy ? 1 : 0
     })
     group.forEach((e, i) => {
       const key: EdgeKey = i === 0 ? base : `${base}${String.fromCharCode(97 + i)}` // b, c, …

@@ -122,7 +122,7 @@ describe('buildGraph', () => {
     expect(Object.keys(graph.edges)).toEqual(['1-2'])
   })
 
-  it('assigns suffix keys to parallel edges ordered by color then distance', () => {
+  it('assigns suffix keys to parallel edges, shortest first', () => {
     const data = raw(
       way(10, [101, 102], { name: 'Yellow' }),
       way(11, [101, 110, 111, 102], { name: 'Red' }),
@@ -135,8 +135,8 @@ describe('buildGraph', () => {
       }),
     )
     expect(Object.keys(graph.edges).sort()).toEqual(['74-75', '74-75b'])
-    expect(graph.edges['74-75'].color).toBe('Red')
-    expect(graph.edges['74-75b'].color).toBe('Yellow')
+    expect(graph.edges['74-75'].color).toBe('Yellow')
+    expect(graph.edges['74-75b'].color).toBe('Red')
     expect(graph.edges['74-75'].minutes).toBe(2)
     expect(graph.edges['74-75b'].minutes).toBe(3)
     expect(graph.adjacency['74'].sort()).toEqual(['74-75', '74-75b'])
