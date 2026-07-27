@@ -79,10 +79,10 @@ describe('buildGraph', () => {
   })
 
   it('merges chains across way boundaries through unnumbered degree-2 nodes', () => {
-    // Two "Main" ways share endpoint 102; only the outer tips are numbered.
+    // Two "Red" ways share endpoint 102; only the outer tips are numbered.
     const data = raw(
-      way(10, [101, 102], { name: 'Main', operator: 'x' }),
-      way(11, [102, 103, 104], { name: 'Main', operator: 'x' }),
+      way(10, [101, 102], { name: 'Red', operator: 'x' }),
+      way(11, [102, 103, 104], { name: 'Red', operator: 'x' }),
     )
     const { graph, warnings } = buildGraph(
       data,
@@ -217,13 +217,89 @@ describe('buildGraph', () => {
     expect(warnings.some((w) => w.includes('disconnected'))).toBe(true)
   })
 
-  it('warns on implausible pace', () => {
-    // ~111m long edge claimed to take 60 minutes.
-    const data = raw(way(10, [101, 102], { name: 'Red' }))
-    const { warnings } = buildGraph(
+  it('branches through curated forkThrough nodes, pairing every branch end', () => {
+    // Y shape: numbered tips 1, 2, 3 meet at unnumbered fork node 104.
+    const data = raw(
+      way(10, [101, 104], { name: 'Red' }),
+      way(11, [104, 102], { name: 'Red' }),
+      way(12, [104, 103], { name: 'Red' }),
+    )
+    const base = {
+      junctions: {
+        '1': { osmNodeId: 101 },
+        '2': { osmNodeId: 102 },
+        '3': { osmNodeId: 103 },
+      },
+      edgeTimes: { '1-2': 5, '1-3': 5, '2-3': 5 },
+    }
+    const without = buildGraph(data, curated(base))
+    expect(Object.keys(without.graph.edges)).toEqual([])
+    expect(without.warnings.some((w) => w.includes('unnumbered junction'))).toBe(true)
+
+    const withFork = buildGraph(data, curated({ ...base, forkThrough: [104] }))
+    expect(Object.keys(withFork.graph.edges).sort()).toEqual(['1-2', '1-3', '2-3'])
+    expect(withFork.warnings).toEqual([])
+  })
+
+  it('keeps keepVisible exclusions out of the graph but in the trails layer', () => {
+    const data = raw(way(10, [101, 102], { name: 'Red' }), way(11, [102, 103], { name: 'Red' }))
+    const { graph, warnings } = buildGraph(
       data,
       curated({
         junctions: { '1': { osmNodeId: 101 }, '2': { osmNodeId: 102 } },
+        exclusions: [{ id: 11, reason: 'viewpoint spur', keepVisible: true }],
+        edgeTimes: { '1-2': 1 },
+      }),
+    )
+    expect(Object.keys(graph.edges)).toEqual(['1-2'])
+    expect(graph.trails.map((t) => t.wayId).sort()).toEqual([10, 11])
+    expect(warnings).toEqual([])
+  })
+
+  it('bridges gaps with curated extra segments', () => {
+    // Two disconnected ways; a synthetic connector joins 102 to 103.
+    const data = raw(way(10, [101, 102], { name: 'Red' }), way(11, [103, 104], { name: 'Red' }))
+    const { graph, warnings } = buildGraph(
+      data,
+      curated({
+        junctions: { '1': { osmNodeId: 101 }, '2': { osmNodeId: 104 } },
+        extraSegments: [{ a: 102, b: 103, color: 'Red', reason: 'road crossing' }],
+        edgeTimes: { '1-2': 5 },
+      }),
+    )
+    expect(Object.keys(graph.edges)).toEqual(['1-2'])
+    expect(graph.edges['1-2'].coords).toHaveLength(4)
+    expect(warnings).toEqual([])
+  })
+
+  it('applies wayColors and edgeColors overrides', () => {
+    const data = raw(
+      way(10, [101, 102], { name: 'Some Trail' }),
+      way(11, [102, 103], { name: 'Red' }),
+    )
+    const { graph, warnings } = buildGraph(
+      data,
+      curated({
+        junctions: { '1': { osmNodeId: 101 }, '2': { osmNodeId: 103 } },
+        wayColors: { '10': 'Yellow' },
+        edgeColors: { '1-2': 'Yellow' },
+        edgeTimes: { '1-2': 3 },
+      }),
+    )
+    expect(graph.edges['1-2'].color).toBe('Yellow')
+    expect(graph.edges['1-2'].name).toBe('Some Trail')
+    expect(graph.trails.find((t) => t.wayId === 10)?.color).toBe('Yellow')
+    // edgeColors suppresses the mid-edge color-change warning
+    expect(warnings).toEqual([])
+  })
+
+  it('warns on implausible pace', () => {
+    // ~445m long edge claimed to take 60 minutes.
+    const data = raw(way(10, [101, 105], { name: 'Red' }))
+    const { warnings } = buildGraph(
+      data,
+      curated({
+        junctions: { '1': { osmNodeId: 101 }, '2': { osmNodeId: 105 } },
         edgeTimes: { '1-2': 60 },
       }),
     )

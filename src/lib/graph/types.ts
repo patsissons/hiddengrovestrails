@@ -87,6 +87,17 @@ export interface CuratedJunction {
 export interface CuratedExclusion {
   id: number
   reason: string
+  /** Still drawn on the map, but excluded from the routing graph (e.g. viewpoint spurs). */
+  keepVisible?: boolean
+}
+
+/** Synthetic two-node connector bridging a gap in the OSM data. */
+export interface CuratedSegment {
+  a: number
+  b: number
+  color: string
+  name?: string
+  reason: string
 }
 
 export interface CuratedData {
@@ -96,4 +107,11 @@ export interface CuratedData {
   edgeTimes: Record<string, number>
   exclusions: CuratedExclusion[]
   pois: Poi[]
+  /** OSM way id -> paper-map color label, overriding way tags. */
+  wayColors?: Record<string, string>
+  /** Edge key -> color label, for edges whose constituent ways mix colors. */
+  edgeColors?: Record<string, string>
+  /** Unnumbered fork nodes where edge walks branch into every continuation. */
+  forkThrough?: number[]
+  extraSegments?: CuratedSegment[]
 }

@@ -1,1 +1,55 @@
-[]
+[
+  { "id": "kiosk", "kind": "kiosk", "name": "Kiosk", "lng": -123.7553522, "lat": 49.5263265 },
+  {
+    "id": "parking",
+    "kind": "parking",
+    "name": "Parking lot",
+    "lng": -123.755907,
+    "lat": 49.5265449
+  },
+  {
+    "id": "ancient-grove",
+    "kind": "grove",
+    "name": "Ancient Grove",
+    "lng": -123.7535297,
+    "lat": 49.5281803
+  },
+  {
+    "id": "lonely-giant",
+    "kind": "grove",
+    "name": "Lonely Giant",
+    "lng": -123.7526354,
+    "lat": 49.5274991
+  },
+  {
+    "id": "leaning-giant",
+    "kind": "grove",
+    "name": "Leaning Giant",
+    "lng": -123.7575371,
+    "lat": 49.5319682
+  },
+  { "id": "twister", "kind": "grove", "name": "Twister", "lng": -123.7555359, "lat": 49.5320398 },
+  { "id": "sentinel", "kind": "grove", "name": "Sentinel", "lng": -123.7520534, "lat": 49.5256741 },
+  { "id": "survivor", "kind": "grove", "name": "Survivor", "lng": -123.7607904, "lat": 49.5231831 },
+  {
+    "id": "davis-brook-grove",
+    "kind": "grove",
+    "name": "Davis Brook Grove",
+    "lng": -123.7603476,
+    "lat": 49.5308024
+  },
+  {
+    "id": "pine-bluff",
+    "kind": "viewpoint",
+    "name": "Pine Bluff",
+    "lng": -123.7554141,
+    "lat": 49.5290729
+  },
+  {
+    "id": "east-viewpoint",
+    "kind": "viewpoint",
+    "name": "Viewpoint",
+    "lng": -123.7485046,
+    "lat": 49.5284867
+  }
+]

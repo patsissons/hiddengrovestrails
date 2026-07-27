@@ -1,0 +1,41 @@
+{
+  "wayColors": {
+    "374517678": "Light Blue",
+    "374517679": "Light Blue",
+    "374517682": "Light Blue",
+    "374517683": "Light Blue",
+    "970002027": "Light Blue",
+    "374517681": "Orange",
+    "1478516677": "Orange",
+    "970276128": "Violet",
+    "374517684": "Black",
+    "1257711889": "Gray",
+    "970002012": "Dark Yellow",
+    "970002016": "Pink",
+    "970002026": "Cyan",
+    "970002029": "Black",
+    "970276127": "Black",
+    "970002017": "Black",
+    "1257711890": "Yellow",
+    "1257711893": "Violet"
+  },
+  "edgeColors": {
+    "1-4": "Purple"
+  },
+  "forkThrough": [3779142957],
+  "extraSegments": [
+    {
+      "a": 13563798403,
+      "b": 13563798404,
+      "color": "Light Blue",
+      "name": "Main",
+      "reason": "Main trail crosses Inlet Road between 69 and 56; the OSM ways are unconnected"
+    },
+    {
+      "a": 8309869217,
+      "b": 11693181403,
+      "color": "Brown",
+      "reason": "Brown trail crosses the logging road at 58; the OSM ways are unconnected"
+    }
+  ]
+}

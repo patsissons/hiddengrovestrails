@@ -15,6 +15,7 @@ export interface BuildResult {
 
 /** A run of OSM nodes between two split nodes, entirely within one way. */
 interface Segment {
+  id: number
   wayId: number
   color: string
   name?: string
@@ -41,28 +42,63 @@ function polylineDistanceM(coords: [number, number][]): number {
   return sum
 }
 
-/** The paper-map color label for a way: explicit `description` wins, else the way name. */
-function wayColor(way: OverpassWay): { color: string; name?: string } {
+/**
+ * The paper-map color label for a way — the marker color hikers follow on the
+ * ground. Curated override wins, then the OSM `description`, then the way name.
+ */
+function wayColor(
+  way: OverpassWay,
+  overrides: Record<string, string>,
+): { color: string; name?: string } {
   const tags = way.tags ?? {}
-  const name = tags.name ?? `way ${way.id}`
-  if (tags.description) return { color: tags.description, name }
-  return { color: name }
+  const color = overrides[String(way.id)] ?? tags.description ?? tags.name ?? `way ${way.id}`
+  const name = tags.name !== undefined && tags.name !== color ? tags.name : undefined
+  return name !== undefined ? { color, name } : { color }
 }
 
 export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult {
   const warnings: string[] = []
-  const excluded = new Set(curated.exclusions.map((e) => e.id))
-  const ways = raw.elements.filter((el) => el.type === 'way' && !excluded.has(el.id))
+  const colorOverrides = curated.wayColors ?? {}
+  const hidden = new Set(curated.exclusions.filter((e) => !e.keepVisible).map((e) => e.id))
+  const graphExcluded = new Set(curated.exclusions.map((e) => e.id))
+  const drawnWays = raw.elements.filter((el) => el.type === 'way' && !hidden.has(el.id))
+  const ways = drawnWays.filter((el) => !graphExcluded.has(el.id))
 
-  // Node coordinates and degree. Degree counts consecutive-pair incidences within
-  // ways, so a node interior to one way but shared with another still shows deg >= 3.
   const nodeCoord = new Map<number, [number, number]>()
-  const degree = new Map<number, number>()
   for (const way of ways) {
     way.nodes.forEach((nodeId, i) => {
       const g = way.geometry[i]
       nodeCoord.set(nodeId, [g.lon, g.lat])
     })
+  }
+
+  // Synthetic connectors bridging gaps in the OSM data (e.g. unconnected stubs
+  // across a road). Their endpoints must be nodes of included ways.
+  const synthetic: OverpassWay[] = []
+  for (const [i, seg] of (curated.extraSegments ?? []).entries()) {
+    const ca = nodeCoord.get(seg.a)
+    const cb = nodeCoord.get(seg.b)
+    if (!ca || !cb) {
+      warnings.push(`extra segment ${seg.a}-${seg.b}: endpoint node not found in included ways`)
+      continue
+    }
+    synthetic.push({
+      type: 'way',
+      id: -(i + 1),
+      nodes: [seg.a, seg.b],
+      geometry: [
+        { lon: ca[0], lat: ca[1] },
+        { lon: cb[0], lat: cb[1] },
+      ],
+      tags: { name: seg.name ?? seg.color, description: seg.color },
+    })
+  }
+  const allWays = [...ways, ...synthetic]
+
+  // Degree counts consecutive-pair incidences within ways, so a node interior
+  // to one way but shared with another still shows deg >= 3.
+  const degree = new Map<number, number>()
+  for (const way of allWays) {
     for (let i = 1; i < way.nodes.length; i++) {
       degree.set(way.nodes[i - 1], (degree.get(way.nodes[i - 1]) ?? 0) + 1)
       degree.set(way.nodes[i], (degree.get(way.nodes[i]) ?? 0) + 1)
@@ -100,7 +136,7 @@ export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult
   // Split nodes: real intersections, way endpoints, and curated numbered nodes.
   const splitNodes = new Set<number>()
   for (const [nodeId, deg] of degree) if (deg >= 3) splitNodes.add(nodeId)
-  for (const way of ways) {
+  for (const way of allWays) {
     splitNodes.add(way.nodes[0])
     splitNodes.add(way.nodes[way.nodes.length - 1])
   }
@@ -108,17 +144,18 @@ export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult
 
   // Cut ways into segments at split nodes.
   const segments: Segment[] = []
-  for (const way of ways) {
-    const { color, name } = wayColor(way)
+  for (const way of allWays) {
+    const { color, name } = wayColor(way, colorOverrides)
     let start = 0
     for (let i = 1; i < way.nodes.length; i++) {
       if (splitNodes.has(way.nodes[i]) || i === way.nodes.length - 1) {
         const nodeIds = way.nodes.slice(start, i + 1)
         const coords = way.geometry.slice(start, i + 1).map((g): [number, number] => [g.lon, g.lat])
         segments.push({
+          id: segments.length,
           wayId: way.id,
           color,
-          ...(name !== undefined && name !== color ? { name } : {}),
+          ...(name !== undefined ? { name } : {}),
           nodeIds,
           coords,
           distanceM: polylineDistanceM(coords),
@@ -142,8 +179,9 @@ export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult
     seg.nodeIds[0] === from ? seg.nodeIds[seg.nodeIds.length - 1] : seg.nodeIds[0]
 
   // Walk from each numbered junction through unnumbered split nodes until another
-  // numbered junction; each traversed segment belongs to exactly one edge.
-  const consumed = new Set<Segment>()
+  // numbered junction. Every edge is discovered from both ends (and forkThrough
+  // nodes branch into every continuation), so edges dedupe by segment signature.
+  const forkThrough = new Set(curated.forkThrough ?? [])
   const warnedNodes = new Set<number>()
   interface RawEdge {
     from: JunctionId
@@ -153,6 +191,7 @@ export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult
     parts: Segment[]
   }
   const rawEdges: RawEdge[] = []
+  const edgeSignatures = new Set<string>()
 
   const appendCoords = (
     acc: [number, number][],
@@ -163,61 +202,59 @@ export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult
     return acc.length === 0 ? coords : [...acc, ...coords.slice(1)]
   }
 
+  interface WalkState {
+    node: number
+    seg: Segment
+    parts: Segment[]
+    coords: [number, number][]
+  }
+
   for (const startNode of numberByNode.keys()) {
-    for (const firstSeg of incidence.get(startNode) ?? []) {
-      if (consumed.has(firstSeg)) continue
-      const parts: Segment[] = []
-      let coords: [number, number][] = []
-      let currentNode = startNode
-      let seg: Segment | undefined = firstSeg
-      let terminal: number | undefined
-      const localConsumed: Segment[] = []
+    const stack: WalkState[] = (incidence.get(startNode) ?? []).map((seg) => ({
+      node: startNode,
+      seg,
+      parts: [],
+      coords: [],
+    }))
+    while (stack.length > 0) {
+      const state = stack.pop()!
+      const parts = [...state.parts, state.seg]
+      const coords = appendCoords(state.coords, state.seg, state.node)
+      const nextNode = segEnd(state.seg, state.node)
 
-      while (seg) {
-        parts.push(seg)
-        localConsumed.push(seg)
-        coords = appendCoords(coords, seg, currentNode)
-        const nextNode = segEnd(seg, currentNode)
-        if (numberByNode.has(nextNode)) {
-          terminal = nextNode
-          break
-        }
-        const nextSegs = (incidence.get(nextNode) ?? []).filter(
-          (s) => s !== seg && !localConsumed.includes(s),
-        )
-        if (nextSegs.length !== 1) {
-          if (!warnedNodes.has(nextNode)) {
-            warnedNodes.add(nextNode)
-            const [lng, lat] = nodeCoord.get(nextNode) ?? [0, 0]
-            warnings.push(
-              nextSegs.length === 0
-                ? `unnumbered dead end at OSM node ${nextNode} (${lat.toFixed(5)}, ${lng.toFixed(5)}) via way ${seg.wayId} — number it, or exclude the way`
-                : `unnumbered junction at OSM node ${nextNode} (${lat.toFixed(5)}, ${lng.toFixed(5)}) — assign it an intersection number or exclude a way`,
-            )
-          }
-          seg = undefined
-          break
-        }
-        currentNode = nextNode
-        seg = nextSegs[0]
+      if (numberByNode.has(nextNode)) {
+        const signature = `${parts
+          .map((p) => p.id)
+          .sort((x, y) => x - y)
+          .join(',')}`
+        if (edgeSignatures.has(signature)) continue
+        edgeSignatures.add(signature)
+        rawEdges.push({
+          from: numberByNode.get(startNode)!,
+          to: numberByNode.get(nextNode)!,
+          coords,
+          distanceM: parts.reduce((sum, p) => sum + p.distanceM, 0),
+          parts,
+        })
+        continue
       }
 
-      if (terminal === undefined) continue
-      for (const s of localConsumed) consumed.add(s)
-
-      const colors = [...new Set(parts.map((p) => p.color))]
-      if (colors.length > 1) {
+      const continuations = (incidence.get(nextNode) ?? []).filter(
+        (s) => s !== state.seg && !parts.includes(s),
+      )
+      if (continuations.length === 1 || (continuations.length > 1 && forkThrough.has(nextNode))) {
+        for (const seg of continuations) {
+          stack.push({ node: nextNode, seg, parts, coords })
+        }
+      } else if (!warnedNodes.has(nextNode)) {
+        warnedNodes.add(nextNode)
+        const [lng, lat] = nodeCoord.get(nextNode) ?? [0, 0]
         warnings.push(
-          `edge ${numberByNode.get(startNode)}-${numberByNode.get(terminal)}: color changes mid-edge (${colors.join(', ')}) at an unnumbered node`,
+          continuations.length === 0
+            ? `unnumbered dead end at OSM node ${nextNode} (${lat.toFixed(5)}, ${lng.toFixed(5)}) via way ${state.seg.wayId} — number it, or exclude the way`
+            : `unnumbered junction at OSM node ${nextNode} (${lat.toFixed(5)}, ${lng.toFixed(5)}) — assign it an intersection number, or mark forkThrough, or exclude a way`,
         )
       }
-      rawEdges.push({
-        from: numberByNode.get(startNode)!,
-        to: numberByNode.get(terminal)!,
-        coords,
-        distanceM: parts.reduce((sum, p) => sum + p.distanceM, 0),
-        parts,
-      })
     }
   }
 
@@ -246,13 +283,21 @@ export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult
     })
     group.forEach((e, i) => {
       const key: EdgeKey = i === 0 ? base : `${base}${String.fromCharCode(97 + i)}` // b, c, …
-      const color = dominantColor(e.parts)
+      const curatedColor = curated.edgeColors?.[key]
+      const color = curatedColor ?? dominantColor(e.parts)
+      const partColors = [...new Set(e.parts.map((p) => p.color))]
+      if (partColors.length > 1 && !curatedColor) {
+        warnings.push(
+          `edge ${key}: color changes mid-edge (${partColors.join(', ')}) — curate edgeColors["${key}"] or number the transition`,
+        )
+      }
       const name = e.parts.find((p) => p.name)?.name
       const minutes = curated.edgeTimes[key] ?? null
       if (minutes === null) warnings.push(`edge ${key}: no walking time curated`)
       const { hex, known } = colorHexFor(color)
       if (!known) warnings.push(`edge ${key}: no hex mapping for color "${color}"`)
-      if (minutes !== null && e.distanceM > 0) {
+      // Short edges are all 1-minute granularity noise; only sanity-check real legs.
+      if (minutes !== null && e.distanceM >= 150) {
         const paceMinPerKm = minutes / (e.distanceM / 1000)
         if (paceMinPerKm < 8 || paceMinPerKm > 45) {
           warnings.push(
@@ -308,13 +353,15 @@ export function buildGraph(raw: OverpassData, curated: CuratedData): BuildResult
     }
   }
 
-  const trails = ways.map((w) => {
-    const { color, name } = wayColor(w)
+  const trails = [...drawnWays, ...synthetic].map((w) => {
+    const { color, name } = wayColor(w, colorOverrides)
+    const { hex, known } = colorHexFor(color)
+    if (!known) warnings.push(`trail way ${w.id}: no hex mapping for color "${color}"`)
     return {
       wayId: w.id,
       color,
-      colorHex: colorHexFor(color).hex,
-      ...(name !== undefined && name !== color ? { name } : {}),
+      colorHex: hex,
+      ...(name !== undefined ? { name } : {}),
       coords: w.geometry.map((g): [number, number] => [g.lon, g.lat]),
     }
   })

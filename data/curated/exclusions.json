@@ -1,7 +1,26 @@
 [
   { "id": 529112937, "reason": "unnamed informal path, not on the paper map" },
-  { "id": 970002017, "reason": "unnamed informal path, not on the paper map" },
+  {
+    "id": 970002017,
+    "reason": "Davis Brook Grove spur at 17 — destination path, not a numbered route",
+    "keepVisible": true
+  },
   { "id": 970002030, "reason": "unnamed informal path, not on the paper map" },
+  {
+    "id": 1257711889,
+    "reason": "Gray Creek Trail — shown 'under construction' on the paper map, no numbered intersections",
+    "keepVisible": true
+  },
+  {
+    "id": 1257711890,
+    "reason": "Pine Bluff viewpoint spur near 26 — destination path, not a numbered route",
+    "keepVisible": true
+  },
+  {
+    "id": 1257711893,
+    "reason": "eastern viewpoint spur off Violet — destination path, not a numbered route",
+    "keepVisible": true
+  },
   { "id": 1257711892, "reason": "unnamed informal path, not on the paper map" },
   { "id": 1257713720, "reason": "unnamed informal path, not on the paper map" },
   { "id": 1319996119, "reason": "unnamed informal path, not on the paper map" },

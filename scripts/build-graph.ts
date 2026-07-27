@@ -10,12 +10,24 @@ async function readJson<T>(path: string): Promise<T> {
   return JSON.parse(await readFile(root(path), 'utf8')) as T
 }
 
+interface Overrides {
+  wayColors: Record<string, string>
+  edgeColors: Record<string, string>
+  forkThrough: number[]
+  extraSegments: CuratedData['extraSegments']
+}
+
 const raw = await readJson<OverpassData>('data/raw/overpass.json')
+const overrides = await readJson<Overrides>('data/curated/overrides.json')
 const curated: CuratedData = {
   junctions: await readJson('data/curated/junctions.json'),
   edgeTimes: await readJson('data/curated/edge-times.json'),
   exclusions: await readJson('data/curated/exclusions.json'),
   pois: await readJson('data/curated/pois.json'),
+  wayColors: overrides.wayColors,
+  edgeColors: overrides.edgeColors,
+  forkThrough: overrides.forkThrough,
+  extraSegments: overrides.extraSegments,
 }
 
 const { graph, warnings } = buildGraph(raw, curated)

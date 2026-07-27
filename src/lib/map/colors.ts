@@ -17,12 +17,9 @@ const COLOR_HEX: Record<string, string> = {
   black: '#1f1f1f',
   brown: '#8b1a2b',
   'light brown': '#b08d3e',
-  // Named trails whose OSM ways carry no color word:
-  'root loop': '#f08019',
-  'cedar loop': '#d78fd7',
-  'rock loop': '#1f1f1f',
-  main: '#8fc3e8',
-  'gray creek trail': '#7a7a7a',
+  'dark yellow': '#a89b2e',
+  cyan: '#35d0e0',
+  gray: '#7a7a7a',
 }
 
 export const UNKNOWN_COLOR_HEX = '#888888'
