@@ -7,6 +7,7 @@ import { graph } from '@/data/graph'
 import { DEFAULT_VISIBILITY, type LayerVisibility } from '@/lib/map/layers'
 import { edgeBounds } from '@/lib/map/config'
 import { useRouteState } from '@/hooks/useRouteState'
+import { useRouteMeta } from '@/hooks/useRouteMeta'
 import type { JunctionId } from '@/lib/graph/types'
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
   const routeState = useRouteState(graph)
   // Camera target for a route cold-loaded from a shared URL; captured once on mount.
   const [initialBounds] = useState(() => edgeBounds(graph, routeState.routeEdgeKeys))
+  useRouteMeta(graph, routeState.tokens)
 
   const handleJunctionClick = useCallback(
     (id: JunctionId) => {

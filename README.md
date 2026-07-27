@@ -53,3 +53,8 @@ from the `packageManager` field).
 
 CI (`pnpm validate` in GitHub Actions) is advisory — Cloudflare deploys regardless of test
 results, so treat a red check on `main` as "the deployed site may be broken".
+
+`functions/index.ts` is a Cloudflare Pages Function (deployed automatically from the `functions/`
+directory) that rewrites the title and OpenGraph tags server-side for shared route URLs, so link
+previews show the route's duration, distance, and legs. Test it locally with
+`pnpm dlx wrangler pages dev dist`.

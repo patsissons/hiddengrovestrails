@@ -134,6 +134,27 @@ test('shows the user location after geolocating', async ({ page, context }) => {
   await expect(page.locator('.maplibregl-user-location-dot')).toBeVisible()
 })
 
+test('reflects the route in the document title and meta description', async ({ page }) => {
+  await page.goto('/?r=1.30.32.33')
+  await waitForMap(page)
+  await expect(page).toHaveTitle('Hidden Groves route 1 → 33 · ~3 min')
+  const description = page.locator('meta[name="description"]')
+  await expect(description).toHaveAttribute('content', /~3 min, 3 legs/)
+  await expect(description).toHaveAttribute('content', /1 → 30 → 32 → 33/)
+
+  await page.getByRole('button', { name: /clear route/i }).click()
+  await expect(page).toHaveTitle('Hidden Groves Trails — Route Planner')
+})
+
+test('links to hiddengroves.ca in a new tab', async ({ page }) => {
+  await page.goto('/')
+  await waitForMap(page)
+  const link = page.getByRole('link', { name: /hiddengroves\.ca/i })
+  await expect(link).toBeVisible()
+  await expect(link).toHaveAttribute('href', 'https://hiddengroves.ca/')
+  await expect(link).toHaveAttribute('target', '_blank')
+})
+
 test('layer toggles hide and show overlay groups', async ({ page }) => {
   await page.goto('/?r=1.30')
   await waitForMap(page)

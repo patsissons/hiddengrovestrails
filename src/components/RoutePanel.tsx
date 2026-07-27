@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown, ChevronUp, RotateCcw, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, ExternalLink, RotateCcw, Trash2 } from 'lucide-react'
 import type { JunctionId, TrailGraph } from '@/lib/graph/types'
 import type { RouteToken } from '@/lib/route/codec'
 import type { Route } from '@/lib/route/validate'
@@ -109,6 +109,15 @@ export default function RoutePanel({
             onSelect={onSelect}
           />
         )}
+        <a
+          href="https://hiddengroves.ca/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 border-t border-slate-100 pt-2 text-xs text-slate-500 hover:text-slate-800"
+        >
+          <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+          Trail conditions, history &amp; society info — hiddengroves.ca
+        </a>
       </div>
     </section>
   )
