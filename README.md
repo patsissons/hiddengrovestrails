@@ -4,6 +4,8 @@ A stateless route planner for the [Hidden Groves](https://hiddengroves.ca/) trai
 Sechelt, BC. Pick a starting intersection number from the official trail map, extend your route
 number-by-number along connected trails, and share the whole route as a URL.
 
+Live at <https://hiddengrovestrails.lgtm.page>, and listed on [lgtm.page](https://lgtm.page).
+
 Trail geometry comes from OpenStreetMap (mapped by the Sechelt Groves Society); intersection
 numbers and per-segment walking times are hand-curated from the official paper map.
 
@@ -47,7 +49,12 @@ pnpm dev
 ## Deployment
 
 The GitHub repo is connected to Cloudflare Pages (Git integration): every push to `main` deploys
-production, and every PR gets a preview URL. Build settings on the Cloudflare side: framework
+production, and every PR gets a preview URL. Production is served at
+<https://hiddengrovestrails.lgtm.page>, a custom domain on the Pages project (Custom domains tab;
+the `lgtm.page` zone is on the same Cloudflare account). `functions/_middleware.ts` 301s the
+production `hiddengrovestrails.pages.dev` host to it, keeping path and query; preview hosts are
+left alone. The absolute OpenGraph URLs in `index.html` use the custom domain, and the app's card
+on lgtm.page reads them. Build settings on the Cloudflare side: framework
 preset **None**, build command **`pnpm build`**, output directory **`dist`** (pnpm version comes
 from the `packageManager` field).
 
