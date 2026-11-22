@@ -93,8 +93,8 @@ test('selects junctions by tapping the map', async ({ page }) => {
       }
     ).__hgMap.jumpTo({ center: [-123.7553, 49.5263], zoom: 17 })
   })
-  await page.waitForTimeout(300)
-  const point = await page.evaluate(() => {
+  // poll until the source has tiled at the new zoom; a fixed sleep raced it
+  const handle = await page.waitForFunction(() => {
     const map = (
       window as unknown as {
         __hgMap: {
@@ -106,9 +106,10 @@ test('selects junctions by tapping the map', async ({ page }) => {
         }
       }
     ).__hgMap
-    const feature = map.querySourceFeatures('hg-junctions').find((f) => f.properties.id === 1)!
-    return map.project(feature.geometry.coordinates)
+    const feature = map.querySourceFeatures('hg-junctions').find((f) => f.properties.id === 1)
+    return feature === undefined ? null : map.project(feature.geometry.coordinates)
   })
+  const point = (await handle.jsonValue())!
   await page.mouse.click(point.x, point.y)
   await expect(page).toHaveURL(/\?r=1$/)
   await expect(page.getByTestId('candidate-list')).toContainText('Continue from 1')
