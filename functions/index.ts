@@ -23,6 +23,7 @@ export const onRequestGet: PagesFunction = async (context) => {
   const meta = buildRouteMeta(graph, param)
   if (meta === null) return response
 
+  const image = `${url.origin}/api/og?r=${encodeURIComponent(param)}`
   return new HTMLRewriter()
     .on('title', {
       element(el) {
@@ -33,9 +34,7 @@ export const onRequestGet: PagesFunction = async (context) => {
     .on('meta[property="og:title"]', setContent(meta.title))
     .on('meta[property="og:description"]', setContent(meta.description))
     .on('meta[property="og:url"]', setContent(url.href))
-    .on(
-      'meta[property="og:image"]',
-      setContent(`${url.origin}/api/og?r=${encodeURIComponent(param)}`),
-    )
+    .on('meta[property="og:image"]', setContent(image))
+    .on('meta[name="twitter:image"]', setContent(image))
     .transform(response)
 }
